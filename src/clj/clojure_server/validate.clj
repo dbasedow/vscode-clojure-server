@@ -7,10 +7,12 @@
             [cheshire.core :as json]))
 
 (defn extract-location [msg]
-    (let [[_ error line char] (re-find #"(.*) \[at line (\d+), column (\d+)\]" msg)]
+    (let [[_ error l c] (re-find #"(.*) \[at line (\d+), column (\d+)\]" msg)
+          character (dec (Integer. c))
+          line (dec (Integer. l))]
         {:range {
-            :start {:line line :character char}
-            :end {:line line :character (inc (Integer. char))}}
+            :start {:line line :character character}
+            :end {:line line :character (inc character)}}
          :message error}))
 
 (defn parse-error?

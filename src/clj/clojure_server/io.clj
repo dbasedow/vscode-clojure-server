@@ -38,15 +38,10 @@
   (let [length (count resp)]
     (str "Content-Length: " length "\r\n" "\r\n" resp)))
 
-(defn dumper [data]
-  (spit "out.log" data :append true)
-  data)
-
 (go-loop []
     (->>  (<! out-chan)
             json/generate-string
             add-content-length
-            dumper
             print)
     (flush)
     (recur))
