@@ -1,8 +1,12 @@
 (ns clojure-server.methods
   (:require [clojure.string :as str]
             [cljfmt.core :as fmt]
+            [rewrite-clj.parser :as p]
             [clojure-server.diff :as diff]
-            [cheshire.core :as json]))
+            [clojure-server.io :as io]
+            [clojure-server.validate :as vali]
+            [cheshire.core :as json]
+            [clojure.core.async :refer [go >!! <!! close! chan pub alts! sub unsub timeout]]))
 
 (def documents (atom {}))
 
@@ -35,3 +39,20 @@
           formatted (fmt/reformat-string content)
           changes (diff/diff content formatted)]
         {:id (:id msg) :result changes}))
+
+(defn publish-diagnostics [uri]
+    (let [content (get @documents uri)
+          parse-diags (vali/parse-error? content)]
+        (>!! io/out-chan
+        {:method "textDocument/publishDiagnostics"
+         :params {
+            :uri uri
+            :diagnostics (if parse-diags [parse-diags] [])
+          }})))
+
+(defn document-did-save [msg]
+    (let [uri (get-in msg [:params :textDocument :uri])
+          content (get @documents uri)]
+        (go
+            (publish-diagnostics uri)))
+    nil)

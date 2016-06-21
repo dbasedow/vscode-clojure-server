@@ -6,6 +6,7 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [jline "2.12"]
                  [cljfmt "0.5.3"]
+                 [org.clojure/core.async "0.2.385"]
                  [cheshire "5.6.1"]]
   :main ^:skip-aot clojure-server.core
   :source-paths ["src/clj"]
